@@ -10,6 +10,20 @@ services:
       - TARGET_SERVER_PORT=${TARGET_SERVER_PORT}
       - TARGET_SERVER_HOST=${TARGET_SERVER_HOST}
 
+  go-proxy:
+    build:
+      context: ./go-tcp-proxy
+      args:
+        - PROXY_SERVER_GO_PORT=${PROXY_SERVER_GO_PORT}
+    ports:
+      - "${PROXY_SERVER_GO_PORT}:${PROXY_SERVER_GO_PORT}"
+    environment:
+      - PROXY_SERVER_GO_PORT=${PROXY_SERVER_GO_PORT}
+      - TARGET_SERVER_HOST=target-server
+      - TARGET_SERVER_PORT=${TARGET_SERVER_PORT}
+    depends_on:
+      - target-server
+
   manual-test:
     build:
       context: ./tests/manual

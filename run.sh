@@ -206,7 +206,7 @@ while [[ "$#" -gt 0 ]]; do
         go|node|java)
             TEST_TYPE="$1"
             ;;
-        target-server)
+        target-server|go-proxy)
             TARGET_CONTAINER="$1"
             ;;
         *)

@@ -34,9 +34,9 @@ def server() -> None:
     TARGET_SERVER_HOST = os.environ.get('TARGET_SERVER_HOST')
 
     if not TARGET_SERVER_PORT:
-        raise Exception("TARGET_SERVER_PORT is not set")
+        raise Exception("TARGET_SERVER_PORT environment variable not set")
     if not TARGET_SERVER_HOST:
-        raise Exception("TARGET_SERVER_HOST is not set")
+        raise Exception("TARGET_SERVER_HOST environment variable not set")
 
     port = int(TARGET_SERVER_PORT)
     host = f"{TARGET_SERVER_HOST}"
@@ -48,8 +48,8 @@ def server() -> None:
             print("Ready for connections...")
 
             while True:
-                conn, addr = s.accept()
-                client_thread = threading.Thread(target=handle_client, args=(conn, addr))
+                connection, address = s.accept()
+                client_thread = threading.Thread(target=handle_client, args=(connection, address))
                 client_thread.start()
 
 if __name__ == "__main__":
