@@ -1,0 +1,17 @@
+{
+  "folders": [
+    {
+      "path": "."
+    }
+  ],
+  "settings": {
+    "cSpell.words": []
+  },
+  "extensions": {
+    "recommendations": [
+      "eamodio.gitlens",
+      "ms-azuretools.vscode-docker",
+      "streetsidesoftware.code-spell-checker"
+    ]
+  }
+}
