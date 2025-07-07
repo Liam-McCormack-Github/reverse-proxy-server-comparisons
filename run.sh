@@ -4,8 +4,6 @@ terminal_width=$(tput cols);
 separator=$(printf '%*s' "$terminal_width" | tr ' ' '-');
 
 usage() {
-    echo "Invalid Option: '$COMMAND'"
-    echo ""
     echo "Usage: ./run.sh <option> [flags]"
     echo ""
     echo "Options:"
@@ -14,6 +12,7 @@ usage() {
     echo "  clean                 Stop and remove containers"
     echo "  purge                 Stop and remove ALL containers on the system"
     echo "  test <go|java|node>   Run integration tests for a specific proxy"
+    echo "  logs <target-server>   Get logs for a specific container"
     echo ""
     echo "Flags:"    
     echo "  --log=console         Log to console"
@@ -155,12 +154,40 @@ dockerTests() {
     echo "$separator"
 }
 
+dockerLogs() {
+    local containers_name="$1"
+    
+
+    if [ -z "$containers_name" ]; then
+        echo "Error: Missing container name."
+        usage
+        exit 1
+    fi
+
+    echo -e "\n\n$separator"
+    echo "Logging outputs for container ${containers_name}..."
+    echo "$separator"
+    case "$LOG_OPTION" in
+        "console")
+            docker-compose logs -f "$containers_name"
+            ;;
+        "file")
+            docker-compose logs -f "$containers_name" > "outputs/${containers_name}.log" 2>&1
+            ;;
+        "both")
+            docker-compose logs -f "$containers_name" 2>&1 | tee -a "outputs/${containers_name}.log"
+            ;;
+    esac
+    echo "$separator"
+    
+}
 
 # Default values
 COMMAND=$1
 shift
 LOG_OPTION="both"
 TEST_TYPE=""
+TARGET_CONTAINER=""
 
 while [[ "$#" -gt 0 ]]; do
     case "$1" in
@@ -169,6 +196,9 @@ while [[ "$#" -gt 0 ]]; do
             ;;
         go|node|java)
             TEST_TYPE="$1"
+            ;;
+        target-server)
+            TARGET_CONTAINER="$1"
             ;;
         *)
             echo "Unknown option: $1"
@@ -181,6 +211,7 @@ done
 case "$COMMAND" in
     up)
         loggingSetup
+        dockerCleanContainers
         dockerUpContainers  
         ;;
     down)
@@ -199,8 +230,12 @@ case "$COMMAND" in
         loggingSetup
         dockerTests "$TEST_TYPE"
         ;;
+    logs)
+        loggingSetup
+        dockerLogs "$TARGET_CONTAINER"
+        ;;
     *)
-        echo "Invalid environment: $ENVIRONMENT"
+        echo "Invalid command: $COMMAND"
         usage
         ;;
 esac

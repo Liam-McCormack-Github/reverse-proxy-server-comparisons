@@ -1,1 +1,6 @@
-empty compose file
+ Container tcp-proxy-server-comparisons-target-server-1  Stopping
+ Container tcp-proxy-server-comparisons-target-server-1  Stopped
+ Container tcp-proxy-server-comparisons-target-server-1  Removing
+ Container tcp-proxy-server-comparisons-target-server-1  Removed
+ Network tcp-proxy-server-comparisons_default  Removing
+ Network tcp-proxy-server-comparisons_default  Removed

@@ -1,0 +1,8 @@
+services:
+  target-server:
+    build:
+      context: ./python-target-server
+      args:
+        - TARGET_SERVER_PORT=${TARGET_SERVER_PORT}
+    ports:
+      - "${TARGET_SERVER_PORT}:${TARGET_SERVER_PORT}"
