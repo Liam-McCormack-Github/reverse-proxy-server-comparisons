@@ -6,3 +6,14 @@ services:
         - TARGET_SERVER_PORT=${TARGET_SERVER_PORT}
     ports:
       - "${TARGET_SERVER_PORT}:${TARGET_SERVER_PORT}"
+    environment:
+      - TARGET_SERVER_PORT=${TARGET_SERVER_PORT}
+      - TARGET_SERVER_HOST=${TARGET_SERVER_HOST}
+
+  manual-test:
+    build:
+      context: ./tests/manual
+    entrypoint: /bin/sh
+    command: -c "sleep infinity"
+    stdin_open: true
+    tty: true

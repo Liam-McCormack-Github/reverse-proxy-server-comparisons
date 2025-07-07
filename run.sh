@@ -11,8 +11,9 @@ usage() {
     echo "  down                  Stop containers"
     echo "  clean                 Stop and remove containers"
     echo "  purge                 Stop and remove ALL containers on the system"
+    echo "  shell                 Exec into a container with Telnet and Netcat"
     echo "  test <go|java|node>   Run integration tests for a specific proxy"
-    echo "  logs <target-server>   Get logs for a specific container"
+    echo "  logs <container>      Get logs for a specific container"
     echo ""
     echo "Flags:"    
     echo "  --log=console         Log to console"
@@ -182,6 +183,14 @@ dockerLogs() {
     
 }
 
+dockerShell() {
+    echo -e "\n\n$separator"
+    echo "Logging outputs for container ${containers_name}..."
+    echo "$separator"
+    docker-compose exec manual-test /bin/sh
+    echo "$separator"
+}
+
 # Default values
 COMMAND=$1
 shift
@@ -227,12 +236,13 @@ case "$COMMAND" in
         dockerPurgeContainers
         ;;
     test)
-        loggingSetup
         dockerTests "$TEST_TYPE"
         ;;
     logs)
-        loggingSetup
         dockerLogs "$TARGET_CONTAINER"
+        ;;
+    shell)
+        dockerShell
         ;;
     *)
         echo "Invalid command: $COMMAND"
