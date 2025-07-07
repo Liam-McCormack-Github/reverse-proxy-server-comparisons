@@ -2,22 +2,32 @@ import socket
 import os
 import threading
 
-def handle_client(connection, address):
+
+def handle_client(connection, address) -> None:
     print(f"New connection from {address}")
     try:
         while True:
             data_received = connection.recv(1024)
+            data = data_received.decode('utf-8').strip()
+            print(f"[{address}] {data}")
             if not data_received:
                 print(f"[{address}] Client disconnected.")
                 break
-            connection.sendall(data_received)
+            if data == "ping":
+                connection.sendall("pong\n".encode('utf-8'))
+            else:
+                connection.sendall(data_received)
+
     except ConnectionResetError:
         print(f"[{address}] Connection reset by peer.")
+
     except Exception as e:
         print(f"An error occurred with {address}: {e}")
+
     finally:
         connection.close()
         print(f"Connection closed for {address}")
+
 
 def server() -> None:
     TARGET_SERVER_PORT = os.environ.get('TARGET_SERVER_PORT')
@@ -27,7 +37,6 @@ def server() -> None:
         raise Exception("TARGET_SERVER_PORT is not set")
     if not TARGET_SERVER_HOST:
         raise Exception("TARGET_SERVER_HOST is not set")
-
 
     port = int(TARGET_SERVER_PORT)
     host = f"{TARGET_SERVER_HOST}"
