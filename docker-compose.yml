@@ -1,7 +1,7 @@
 services:
   target-server:
     build:
-      context: ./python-target-server
+      context: ./target-server
       args:
         - TARGET_SERVER_PORT=${TARGET_SERVER_PORT}
     ports:
@@ -12,15 +12,20 @@ services:
 
   go-proxy:
     build:
-      context: ./go-tcp-proxy
+      context: ./go-proxy
       args:
-        - PROXY_SERVER_GO_PORT=${PROXY_SERVER_GO_PORT}
+        - GO_PROXY_SERVER_PORT=${GO_PROXY_SERVER_PORT}
     ports:
-      - "${PROXY_SERVER_GO_PORT}:${PROXY_SERVER_GO_PORT}"
+      - "${GO_PROXY_SERVER_PORT}:${GO_PROXY_SERVER_PORT}"
     environment:
-      - PROXY_SERVER_GO_PORT=${PROXY_SERVER_GO_PORT}
+      - GO_PROXY_SERVER_PORT=${GO_PROXY_SERVER_PORT}
       - TARGET_SERVER_HOST=target-server
       - TARGET_SERVER_PORT=${TARGET_SERVER_PORT}
+      - GO_PROXY_ADMIN_ID=${GO_PROXY_ADMIN_ID}
+      - GO_PROXY_ADMIN_SECRET=${GO_PROXY_ADMIN_SECRET}
+      - GO_PROXY_REAUTH_COOLDOWN_MS=${GO_PROXY_REAUTH_COOLDOWN_MS}
+      - GO_PROXY_RETRY_ATTEMPTS=${GO_PROXY_RETRY_ATTEMPTS}
+      - GO_PROXY_RETRY_INTERVAL_MS=${GO_PROXY_RETRY_INTERVAL_MS}
     depends_on:
       - target-server
 

@@ -8,6 +8,8 @@ RUN CGO_ENABLED=0 GOOS=linux go build -o /app/proxy -ldflags "-w -s" .
 FROM scratch
 WORKDIR /app
 COPY --from=builder /app/proxy .
-ARG PROXY_SERVER_GO_PORT
-EXPOSE ${PROXY_SERVER_GO_PORT}
+COPY --from=builder /app/cert.pem .
+COPY --from=builder /app/key.pem .
+ARG GO_PROXY_SERVER_PORT
+EXPOSE ${GO_PROXY_SERVER_PORT}
 CMD ["/app/proxy"]
