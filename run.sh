@@ -52,24 +52,43 @@ generateCertificates() {
     echo "Checking for SSL certificates..."
     echo "$separator"
 
+    # Define the certificate subject and the required hostnames
+    subj="/CN=localhost"
+    sans="DNS:localhost,DNS:target-server"
+
     # Generate certs for the target-server
-    if [ ! -f "target-server/cert.pem" ] || [ ! -f "target-server/key.pem" ]; then
-        echo "Generating certificates for target-server..."
-        (cd target-server && openssl req -x509 -newkey rsa:2048 -nodes \
-            -keyout key.pem -out cert.pem \
-            -subj "//CN=localhost")
-    else
+    if [ -f "target-server/cert.pem" ] && [ -f "target-server/key.pem" ]; then
         echo "Certificates for target-server already exist."
+    else
+        echo "Generating certificates for target-server..."
+        openssl req -x509 -newkey rsa:2048 -nodes \
+            -keyout "target-server/key.pem" \
+            -out "target-server/cert.pem" \
+            -subj "$subj" \
+            -addext "subjectAltName = $sans"
     fi
 
     # Generate certs for the go-proxy
-    if [ ! -f "go-proxy/cert.pem" ] || [ ! -f "go-proxy/key.pem" ]; then
-        echo "Generating certificates for go-proxy..."
-        (cd go-proxy && openssl req -x509 -newkey rsa:2048 -nodes \
-            -keyout key.pem -out cert.pem \
-            -subj "//CN=localhost")
-    else
+    if [ -f "go-proxy/cert.pem" ] && [ -f "go-proxy/key.pem" ]; then
         echo "Certificates for go-proxy already exist."
+    else
+        echo "Generating certificates for go-proxy..."
+        # Note: The proxy's own certificate only needs to be valid for localhost
+        openssl req -x509 -newkey rsa:2048 -nodes \
+            -keyout "go-proxy/key.pem" \
+            -out "go-proxy/cert.pem" \
+            -subj "/CN=localhost"
+    fi
+    
+    # Generate certs for the java-proxy
+    if [ -f "java-proxy/cert.pem" ] && [ -f "java-proxy/key.pem" ]; then
+        echo "Certificates for java-proxy already exist."
+    else
+        echo "Generating certificates for java-proxy..."
+        openssl req -x509 -newkey rsa:2048 -nodes \
+            -keyout "java-proxy/key.pem" \
+            -out "java-proxy/cert.pem" \
+            -subj "/CN=localhost"
     fi
 
     echo "$separator"
@@ -291,6 +310,8 @@ logAll() {
     pids+=($!)
     dockerLogs "go-proxy" &
     pids+=($!)
+    dockerLogs "java-proxy" &
+    pids+=($!)
     wait
 }
 
@@ -312,7 +333,7 @@ while [[ "$#" -gt 0 ]]; do
         go|node|java)
             TARGET_PROXY="$1"
             ;;
-        target-server|go-proxy|node-proxy|java-proxy)
+        target-server|go-proxy|node-proxy|java-proxy|manual-test)
             TARGET_CONTAINER="$1"
             ;;
         *)

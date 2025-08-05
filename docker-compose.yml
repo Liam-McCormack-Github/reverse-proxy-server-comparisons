@@ -29,9 +29,29 @@ services:
     depends_on:
       - target-server
 
+  java-proxy:
+    build:
+      context: ./java-proxy
+      args:
+        - JAVA_PROXY_SERVER_PORT=${JAVA_PROXY_SERVER_PORT}
+    ports:
+      - "${JAVA_PROXY_SERVER_PORT}:${JAVA_PROXY_SERVER_PORT}"
+    environment:
+      - JAVA_PROXY_SERVER_PORT=${JAVA_PROXY_SERVER_PORT}
+      - TARGET_SERVER_HOST=target-server
+      - TARGET_SERVER_PORT=${TARGET_SERVER_PORT}
+      - JAVA_PROXY_ADMIN_ID=${JAVA_PROXY_ADMIN_ID}
+      - JAVA_PROXY_ADMIN_SECRET=${JAVA_PROXY_ADMIN_SECRET}
+      - JAVA_PROXY_REAUTH_COOLDOWN_MS=${JAVA_PROXY_REAUTH_COOLDOWN_MS}
+      - JAVA_PROXY_RETRY_ATTEMPTS=${JAVA_PROXY_RETRY_ATTEMPTS}
+      - JAVA_PROXY_RETRY_INTERVAL_MS=${JAVA_PROXY_RETRY_INTERVAL_MS}
+    depends_on:
+      - target-server
+
   manual-test:
     build:
       context: ./tests/manual
+    env_file: .env
     entrypoint: /bin/sh
     command: -c "sleep infinity"
     stdin_open: true
