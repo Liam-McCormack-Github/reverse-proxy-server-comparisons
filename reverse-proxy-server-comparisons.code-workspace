@@ -5,7 +5,7 @@
     }
   ],
   "settings": {
-    "cSpell.words": ["COOLDOWN", "Netcat"]
+    "cSpell.words": ["COOLDOWN", "Netcat", "Reauthenticating"]
   },
   "extensions": {
     "recommendations": [

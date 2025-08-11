@@ -21,7 +21,7 @@ usage() {
     echo ""
     echo "Options:"
     echo "  start                 Cleans and then starts containers"
-    echo "  continue              Starts containers"
+    echo "  resume                Starts containers"
     echo "  stop                  Stop containers"
     echo "  clean                 Stop and remove containers"
     echo "  purge                 Stop and remove ALL containers on the system"
@@ -88,6 +88,17 @@ generateCertificates() {
         openssl req -x509 -newkey rsa:2048 -nodes \
             -keyout "java-proxy/key.pem" \
             -out "java-proxy/cert.pem" \
+            -subj "/CN=localhost"
+    fi
+
+    # Generate certs for the node-proxy
+    if [ -f "node-proxy/cert.pem" ] && [ -f "node-proxy/key.pem" ]; then
+        echo "Certificates for node-proxy already exist."
+    else
+        echo "Generating certificates for node-proxy..."
+        openssl req -x509 -newkey rsa:2048 -nodes \
+            -keyout "node-proxy/key.pem" \
+            -out "node-proxy/cert.pem" \
             -subj "/CN=localhost"
     fi
 
@@ -312,6 +323,8 @@ logAll() {
     pids+=($!)
     dockerLogs "java-proxy" &
     pids+=($!)
+    dockerLogs "node-proxy" &
+    pids+=($!)
     wait
 }
 
@@ -352,7 +365,7 @@ case "$COMMAND" in
         dockerStartContainers  
         dockerCreateProxyUsers
         ;;
-    continue)
+    resume)
         dockerStartContainers  
         ;;
     stop)

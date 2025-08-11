@@ -10,3 +10,4 @@ go-proxy/*.pem
 java-proxy/*.pem
 
 node-proxy/*.pem
+node-proxy/node_modules/*

@@ -3,7 +3,7 @@ WORKDIR /app
 COPY go.* ./
 RUN go mod download
 COPY . .
-RUN CGO_ENABLED=0 GOOS=linux go build -o /app/proxy -ldflags "-w -s" .
+RUN CGO_ENABLED=0 GOOS=linux go build -o /app/proxy -ldflags "-w -s" ./cmd/proxy
 
 FROM scratch
 WORKDIR /app

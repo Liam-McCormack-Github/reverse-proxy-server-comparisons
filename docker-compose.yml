@@ -48,6 +48,25 @@ services:
     depends_on:
       - target-server
 
+  node-proxy:
+    build:
+      context: ./node-proxy
+      args:
+        - NODE_PROXY_SERVER_PORT=${NODE_PROXY_SERVER_PORT}
+    ports:
+      - "${NODE_PROXY_SERVER_PORT}:${NODE_PROXY_SERVER_PORT}"
+    environment:
+      - NODE_PROXY_SERVER_PORT=${NODE_PROXY_SERVER_PORT}
+      - TARGET_SERVER_HOST=target-server
+      - TARGET_SERVER_PORT=${TARGET_SERVER_PORT}
+      - NODE_PROXY_ADMIN_ID=${NODE_PROXY_ADMIN_ID}
+      - NODE_PROXY_ADMIN_SECRET=${NODE_PROXY_ADMIN_SECRET}
+      - NODE_PROXY_REAUTH_COOLDOWN_MS=${NODE_PROXY_REAUTH_COOLDOWN_MS}
+      - NODE_PROXY_RETRY_ATTEMPTS=${NODE_PROXY_RETRY_ATTEMPTS}
+      - NODE_PROXY_RETRY_INTERVAL_MS=${NODE_PROXY_RETRY_INTERVAL_MS}
+    depends_on:
+      - target-server
+
   manual-test:
     build:
       context: ./tests/manual

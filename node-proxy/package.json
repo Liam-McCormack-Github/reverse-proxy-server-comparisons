@@ -1,0 +1,28 @@
+{
+  "name": "node-proxy",
+  "version": "1.0.0",
+  "description": "Node.js reverse proxy for concurrency comparison",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "lint": "eslint . --ext .ts",
+    "format": "prettier --write \"src/**/*.ts\""
+  },
+  "author": "Liam McCormack",
+  "type": "commonjs",
+  "dependencies": {
+    "http-proxy": "1.18.1"
+  },
+  "devDependencies": {
+    "@types/http-proxy": "1.17.16",
+    "@types/node": "24.2.0",
+    "@typescript-eslint/eslint-plugin": "8.39.0",
+    "@typescript-eslint/parser": "8.39.0",
+    "eslint": "9.32.0",
+    "eslint-config-prettier": "10.1.8",
+    "eslint-plugin-prettier": "5.5.3",
+    "prettier": "3.6.2",
+    "typescript": "5.9.2"
+  }
+}

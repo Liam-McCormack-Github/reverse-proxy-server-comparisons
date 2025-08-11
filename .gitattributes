@@ -1,13 +1,12 @@
 * text=auto
 
-# These files should ALWAYS have LF (Unix/Linux) line endings
+Dockerfile eol=lf
+.gitignore eol=lf
 *.sh eol=lf
 *.js eol=lf
 *.ts eol=lf
 *.json eol=lf
 *.yml eol=lf
 *.md eol=lf
-Dockerfile eol=lf
-.gitignore eol=lf
 .eslintignore eol=lf
 .prettierrc.json eol=lf
