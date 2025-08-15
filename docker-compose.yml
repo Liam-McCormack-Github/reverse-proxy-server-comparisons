@@ -2,6 +2,8 @@ services:
   target-server:
     build:
       context: ./target-server
+      dockerfile: ./go-target-server/Dockerfile
+      # dockerfile: ./python-target-server/Dockerfile
       args:
         - TARGET_SERVER_PORT=${TARGET_SERVER_PORT}
     ports:

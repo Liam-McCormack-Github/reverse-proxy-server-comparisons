@@ -1,6 +1,7 @@
 .env
 temp/*
 outputs/*
+outputs-k6/*
 
 target-server/*.pem
 target-server/master_token.txt

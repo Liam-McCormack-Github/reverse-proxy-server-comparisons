@@ -10,10 +10,10 @@ import (
 	"net/url"
 
 	// Local imports
-	"github.com/Liam-McCormack-Github/go-proxy/internal/auth"
-	"github.com/Liam-McCormack-Github/go-proxy/internal/config"
-	"github.com/Liam-McCormack-Github/go-proxy/internal/handlers"
-	"github.com/Liam-McCormack-Github/go-proxy/internal/logger"
+	"go-proxy/internal/auth"
+	"go-proxy/internal/config"
+	"go-proxy/internal/handlers"
+	"go-proxy/internal/logger"
 )
 
 func New(cfg *config.Config, authManager *auth.Manager) *httputil.ReverseProxy {

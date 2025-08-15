@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	// Local imports
-	"github.com/Liam-McCormack-Github/go-proxy/internal/logger"
+	"go-proxy/internal/logger"
 )
 
 func HasCustomHandler(path string) bool {

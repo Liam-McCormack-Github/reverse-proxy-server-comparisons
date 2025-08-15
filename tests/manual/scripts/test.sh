@@ -21,18 +21,22 @@ run_stream_test() {
 
     echo -e "\n\n"
     echo "Running 'stream' test on '$proxy_name'"
-    wget -q --no-check-certificate "https://$proxy_service_name:$proxy_port/stream" -O /dev/null &
-    WGET_PID=$!
-    echo "Stream is running in the background (PID: $WGET_PID). Press [Enter] to stop."
-    read -r
-    echo "Stopping stream..."
+
+    curl --insecure --no-buffer "https://$proxy_service_name:$proxy_port/stream" > /tmp/stream_output.txt &
+    CURL_PID=$!
+    echo "Stream is running in the background (PID: $CURL_PID). Checking output for 5 seconds..."
+    sleep 5
+    kill $CURL_PID
+    wait $CURL_PID 2>/dev/null
+    echo "Stream stopped. Analysing received data..."
     
-    if kill -0 $WGET_PID > /dev/null 2>&1; then
-        kill $WGET_PID
-        echo "Stream stopped."
+    if [ -s /tmp/stream_output.txt ] && grep -q "data: message" /tmp/stream_output.txt; then
+        echo "✅ Stream test PASSED: Received expected data."
     else
-        echo "Stream process (PID: $WGET_PID) was already stopped."
+        echo "❌ Stream test FAILED: Did not receive expected data."
     fi
+
+    rm /tmp/stream_output.txt
 }
 
 if [ "$#" -lt 2 ]; then

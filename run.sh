@@ -2,6 +2,7 @@
 
 terminal_width=$(tput cols);
 separator=$(printf '%*s' "$terminal_width" | tr ' ' '-');
+current_timestamp=$(date +%s)
 
 # --------------------------------------------------------------
 # SETUP AND VALIDATION FUNCTIONS
@@ -217,29 +218,43 @@ dockerPurgeContainers() {
 }
 
 
-dockerTests() {
+k6Tests() {
     local proxy_name="$1"
+    local test_scripts=("soak") # Update this with tests from tests/k6/*.js
+    local k6_dir="outputs-k6"
 
     if [ -z "$proxy_name" ]; then
-        echo "Error: Missing proxy name."
+        echo "Error: Missing proxy name for 'test' command."
         usage
         exit 1
     fi
 
     echo -e "\n\n$separator"
-    echo "Running Python tests for ${proxy_name} proxy..."
+    echo "Starting Full Test Suite for Proxy: $proxy_name"
     echo "$separator"
-    case "$LOG_OPTION" in
-        "console")
-            # docker-compose run ????
-            ;;
-        "file")
-            # docker-compose run ???? > "outputs/${proxy_name}-tests.log" 2>&1
-            ;;
-        "both")
-            # docker-compose run ???? 2>&1 | tee -a "outputs/${proxy_name}-tests.log"
-            ;;
-    esac
+
+    
+    mkdir -p ${k6_dir}
+    mkdir -p ${k6_dir}/${current_timestamp}
+
+    for test_script in "${test_scripts[@]}"; do
+        echo "🚀 Running test: '${test_script}.js' against proxy: '${proxy_name}'..."
+        cp "tests/k6/${test_script}.js" "${k6_dir}/${current_timestamp}/"
+        echo "📝 Logging current processes..."
+        tasklist //v //fo csv > "${k6_dir}/${current_timestamp}/processes-before-${proxy_name}-test.csv"
+
+        # Call the local k6 binary
+        k6 run --quiet --summary-export="${k6_dir}/${current_timestamp}/summary_run_${proxy_name}.json" --out json="${k6_dir}/${current_timestamp}/metrics_run_${proxy_name}.json" --env PROXY_TARGET="$proxy_name" "tests/k6/${test_script}.js" 2>&1 | tee -a "${k6_dir}/${current_timestamp}/k6_log_run_${proxy_name}.log"
+
+        if [ $? -eq 0 ]; then
+            echo "✅ Completed test: '${test_script}.js' for proxy: '${proxy_name}'."
+        else
+            echo "❌ FAILED test: '${test_script}.js' for proxy: '${proxy_name}'."
+        fi
+        echo "$separator"
+    done
+    
+    echo "▶️  Finished Full Test Suite for Proxy: $proxy_name"
     echo "$separator"
 }
 
@@ -252,13 +267,9 @@ dockerLogs() {
         exit 1
     fi
 
-    # Use printf to create the padded prefix.
     local prefix
     prefix=$(printf "%-14s" "$containers_name")
 
-    # This helper function reads each line from the input
-    # and prepends the padded prefix. It's more robust than 'sed'
-    # in some cross-platform environments.
     add_prefix() {
         while IFS= read -r line; do
             echo "${prefix} | ${line}"
@@ -270,7 +281,6 @@ dockerLogs() {
             docker-compose logs -f "$containers_name" --no-log-prefix | add_prefix
             ;;
         "file")
-            # The 2>&1 redirects stderr to stdout so 'add_prefix' processes both.
             docker-compose logs -f "$containers_name" --no-log-prefix 2>&1 | add_prefix > "outputs/${containers_name}.log"
             ;;
         "both")
@@ -290,7 +300,7 @@ dockerShell() {
     echo -e "\n\n$separator"
     echo "Entering shell for container ${containers_name}..."
     echo "$separator"
-    docker-compose exec ${containers_name} /bin/sh
+    docker-compose exec ${containers_name} //bin/sh
     echo "$separator"
 }
 
@@ -300,9 +310,16 @@ dockerCreateProxyUsers() {
     echo "Creating/updating proxy users in the database..."
     echo "$separator"
     export $(grep -v '^#' .env | xargs)
-    docker-compose exec target-server /bin/sh -c "python create_proxy_user.py --id $GO_PROXY_ADMIN_ID --secret $GO_PROXY_ADMIN_SECRET"
-    docker-compose exec target-server /bin/sh -c "python create_proxy_user.py --id $JAVA_PROXY_ADMIN_ID --secret $JAVA_PROXY_ADMIN_SECRET"
-    docker-compose exec target-server /bin/sh -c "python create_proxy_user.py --id $NODE_PROXY_ADMIN_ID --secret $NODE_PROXY_ADMIN_SECRET"
+
+    # python-target-server
+    # docker-compose exec target-server //bin/sh -c "python create_proxy_user.py --id $GO_PROXY_ADMIN_ID --secret $GO_PROXY_ADMIN_SECRET"
+    # docker-compose exec target-server //bin/sh -c "python create_proxy_user.py --id $JAVA_PROXY_ADMIN_ID --secret $JAVA_PROXY_ADMIN_SECRET"
+    # docker-compose exec target-server //bin/sh -c "python create_proxy_user.py --id $NODE_PROXY_ADMIN_ID --secret $NODE_PROXY_ADMIN_SECRET"
+    
+    # go-target-server
+    docker-compose exec target-server //app/create_proxy_user --id $GO_PROXY_ADMIN_ID --secret $GO_PROXY_ADMIN_SECRET
+    docker-compose exec target-server //app/create_proxy_user --id $JAVA_PROXY_ADMIN_ID --secret $JAVA_PROXY_ADMIN_SECRET
+    docker-compose exec target-server //app/create_proxy_user --id $NODE_PROXY_ADMIN_ID --secret $NODE_PROXY_ADMIN_SECRET
     echo "$separator"
 }
 
@@ -378,13 +395,21 @@ case "$COMMAND" in
         dockerPurgeContainers
         ;;
     test)
-        dockerTests "$TARGET_PROXY"
+        k6Tests "$TARGET_PROXY"
+        ;;
+    testAll)
+        k6Tests "go-proxy"
+        k6Tests "java-proxy"
+        k6Tests "node-proxy"
         ;;
     logs)
         dockerLogs "$TARGET_CONTAINER"
         ;;
     logAll)
         logAll
+        ;;
+    createProxyUsers)
+        dockerCreateProxyUsers
         ;;
     shell)
         dockerShell "$TARGET_CONTAINER"

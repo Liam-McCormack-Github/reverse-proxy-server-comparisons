@@ -7,10 +7,10 @@ import (
 	"time"
 
 	// Local imports
-	"github.com/Liam-McCormack-Github/go-proxy/internal/auth"
-	"github.com/Liam-McCormack-Github/go-proxy/internal/config"
-	"github.com/Liam-McCormack-Github/go-proxy/internal/logger"
-	"github.com/Liam-McCormack-Github/go-proxy/internal/proxy"
+	"go-proxy/internal/auth"
+	"go-proxy/internal/config"
+	"go-proxy/internal/logger"
+	"go-proxy/internal/proxy"
 )
 
 func main() {

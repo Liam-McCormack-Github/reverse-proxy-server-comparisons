@@ -7,7 +7,7 @@ import (
 	"time"
 
 	// Local imports
-	"github.com/Liam-McCormack-Github/go-proxy/internal/logger"
+	"go-proxy/internal/logger"
 )
 
 type Config struct {

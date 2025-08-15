@@ -13,8 +13,8 @@ import (
 	"time"
 
 	// Local imports
-	"github.com/Liam-McCormack-Github/go-proxy/internal/config"
-	"github.com/Liam-McCormack-Github/go-proxy/internal/logger"
+	"go-proxy/internal/config"
+	"go-proxy/internal/logger"
 )
 
 type authRequest struct {
