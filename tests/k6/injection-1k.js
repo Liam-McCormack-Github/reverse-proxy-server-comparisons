@@ -8,16 +8,15 @@ const activeServer = SERVERS[__ENV.PROXY_TARGET] || SERVERS.go;
 
 export const options = {
   ...COMMON_OPTIONS,
-
   stages: [
-    { duration: "15s", target: 10 },
-    { duration: "30s", target: 1000 },
-    { duration: "15s", target: 10 },
+    { duration: "1m", target: 10 },
+    { duration: "3m", target: 1000 },
+    { duration: "1m", target: 10 },
   ],
 };
 
 export default function () {
-  const res = http.get(`${activeServer}`);
+  const res = http.get(`${activeServer}/wheredidicomefrom`);
 
   check(res, {
     "status is 200": (r) => r.status === 200,

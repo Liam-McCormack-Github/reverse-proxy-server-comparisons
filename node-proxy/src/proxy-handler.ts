@@ -1,17 +1,13 @@
 import httpProxy from 'http-proxy';
-import { Agent } from 'https';
 import { IncomingMessage, ServerResponse } from 'http';
 import { logger, LogLevel } from './logger';
 import { AuthManager } from './auth-manager';
 import config from './config';
 import { customHandlers, handleCustomResponse } from './response-handler';
+import { sharedHttpsAgent } from './agent';
 
 const proxy = httpProxy.createProxyServer();
 const targetUrl = `https://${config.targetHost}:${config.targetPort}`;
-const customHttpsAgent = new Agent({
-  rejectUnauthorized: false,
-  keepAlive: false,
-});
 
 export const createRequestHandler = (authManager: AuthManager) => {
   proxy.on('proxyRes', (proxyRes, req, res) => {
@@ -43,7 +39,6 @@ export const createRequestHandler = (authManager: AuthManager) => {
     if (customHandlers[req.url || '']) {
       proxyReq.removeHeader('Accept-Encoding');
     }
-    req.socket.on('close', () => proxyReq.destroy());
   });
 
   return (req: IncomingMessage, res: ServerResponse) => {
@@ -57,7 +52,7 @@ export const createRequestHandler = (authManager: AuthManager) => {
       target: targetUrl,
       secure: false,
       changeOrigin: true,
-      agent: customHttpsAgent,
+      agent: sharedHttpsAgent,
       selfHandleResponse: needsManualResponse,
     });
   };

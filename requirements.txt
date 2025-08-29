@@ -1,0 +1,10 @@
+# Data Analysis & Visualization
+pandas
+matplotlib
+seaborn
+
+# Database Connector
+influxdb
+
+# Environment Variable Management
+python-dotenv

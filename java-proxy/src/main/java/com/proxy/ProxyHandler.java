@@ -88,9 +88,11 @@ public class ProxyHandler implements HttpHandler {
 
             exchange.setStatusCode(response.statusCode());
             response.headers().map().forEach((key, values) -> {
-                HttpString headerName = new HttpString(key);
-                if (!RESTRICTED_HEADERS.contains(headerName)) {
-                    exchange.getResponseHeaders().putAll(headerName, values);
+                if (key != null && !key.startsWith(":")) { // Deal with HTTP version headers colliding
+                    HttpString headerName = new HttpString(key);
+                    if (!RESTRICTED_HEADERS.contains(headerName)) {
+                        exchange.getResponseHeaders().putAll(headerName, values);
+                    }
                 }
             });
 

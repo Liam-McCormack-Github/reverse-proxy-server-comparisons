@@ -1,6 +1,8 @@
 import argparse
+
 from database import Database
 from simple_logger import log
+
 
 def main():
     parser = argparse.ArgumentParser(description="Add a new proxy user to the database.")
@@ -18,6 +20,7 @@ def main():
     else:
         log("ERROR", f"Failed to add user", extras=f"Admin ID: '{args.id}'")
     db.close()
+
 
 if __name__ == "__main__":
     main()

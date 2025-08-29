@@ -1,20 +1,14 @@
 import https from 'https';
-import { Agent } from 'https';
-import { logger, LogLevel } from './logger';
+import { sharedHttpsAgent } from './agent';
 import { Config } from './config';
+import { logger, LogLevel } from './logger';
 
 export class AuthManager {
   private masterToken: string = '';
   private isReauthenticating = false;
   private lastReauthAttempt = 0;
-  private readonly httpsAgent: Agent;
 
-  constructor(private cfg: Config) {
-    this.httpsAgent = new Agent({
-      rejectUnauthorized: false,
-      keepAlive: false,
-    });
-  }
+  constructor(private cfg: Config) {}
 
   public getToken(): string {
     return this.masterToken;
@@ -86,7 +80,7 @@ export class AuthManager {
           'Content-Type': 'application/json',
           'Content-Length': Buffer.byteLength(postData),
         },
-        agent: this.httpsAgent,
+        agent: sharedHttpsAgent,
       };
 
       const req = https.request(options, res => {
@@ -105,7 +99,7 @@ export class AuthManager {
           }
         });
       });
-      req.on(LogLevel.ERROR, e => reject(new Error(`Auth request failed: ${e.message}`)));
+      req.on('error', e => reject(new Error(`Auth request failed: ${e.message}`)));
       req.write(postData);
       req.end();
     });

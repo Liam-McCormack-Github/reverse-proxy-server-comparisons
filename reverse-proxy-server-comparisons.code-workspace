@@ -5,7 +5,23 @@
     }
   ],
   "settings": {
-    "cSpell.words": ["COOLDOWN", "Netcat", "Reauthenticating"]
+    "cSpell.words": [
+      "blkio",
+      "COOLDOWN",
+      "dockerstats",
+      "dotenv",
+      "figsize",
+      "fontsize",
+      "lineplot",
+      "Netcat",
+      "perc",
+      "perdevice",
+      "Reauthenticating",
+      "relplot",
+      "succ",
+      "takedown",
+      "tasklist"
+    ]
   },
   "extensions": {
     "recommendations": [

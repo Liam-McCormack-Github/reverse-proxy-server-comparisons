@@ -15,20 +15,28 @@ export function handleCustomResponse(proxyRes: IncomingMessage, req: IncomingMes
 }
 
 function handleWheredidicomefrom(proxyRes: IncomingMessage, req: IncomingMessage, res: ServerResponse) {
+  res.on('close', () => {
+    logger(LogLevel.WARN, 'Client disconnected prematurely. Cleaning up proxy response.');
+    proxyRes.destroy();
+  });
+
   const body: Buffer[] = [];
   proxyRes.on('data', chunk => {
     body.push(chunk);
   });
+
   proxyRes.on('end', () => {
     const originalBody = Buffer.concat(body).toString();
     const injectedHtml = '<p style="color: blue; font-weight: bold;">Injected by the Node.js Proxy!</p>';
     const modifiedBody = originalBody.replace('</body>', `${injectedHtml}</body>`);
 
-    res.writeHead(200, {
-      'Content-Type': 'text/html',
-      'Content-Length': Buffer.byteLength(modifiedBody),
-    });
-    res.end(modifiedBody);
-    logger(LogLevel.INFO, 'Successfully injected custom HTML into response');
+    if (!res.writableEnded) {
+      res.writeHead(200, {
+        'Content-Type': 'text/html',
+        'Content-Length': Buffer.byteLength(modifiedBody),
+      });
+      res.end(modifiedBody);
+      logger(LogLevel.INFO, 'Successfully injected custom HTML into response');
+    }
   });
 }

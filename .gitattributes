@@ -3,6 +3,9 @@
 Dockerfile eol=lf
 .gitignore eol=lf
 *.sh eol=lf
+*.py eol=lf
+*.json eol=lf
+*.txt eol=lf
 *.js eol=lf
 *.ts eol=lf
 *.json eol=lf

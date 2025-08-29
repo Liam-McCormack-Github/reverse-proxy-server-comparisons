@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Heavy Asset Page</title>
+  </head>
+  <body>
+    <h1>Heavy Asset Page</h1>
+    <br />
+    <a href="/">Home</a>
+    <br />
+    <a href="/page">Page</a>
+    <br />
+    <a href="/wheredidicomefrom">wheredidicomefrom</a>
+    <br />
+    <a href="/heavy-asset">heavy-asset</a>
+
+    <h1>Heavy Asset Simulation</h1>
+    <p>
+      This page is designed to be a larger payload than the other simple HTML
+      files. It includes an embedded script that performs a client-side
+      calculation to simulate a more realistic and resource-intensive asset.
+    </p>
+
+    <h2>Calculation Result</h2>
+    <p>
+      The script below will calculate all prime numbers up to a predefined limit
+      and display the result here:
+    </p>
+    <pre id="output">Calculating...</pre>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const outputElement = document.getElementById("output");
+        const limit = 15000;
+        let primesFound = 0;
+
+        function isPrime(num) {
+          if (num <= 1) return false;
+          if (num <= 3) return true;
+          if (num % 2 === 0 || num % 3 === 0) return false;
+          for (let i = 5; i * i <= num; i = i + 6) {
+            if (num % i === 0 || num % (i + 2) === 0) {
+              return false;
+            }
+          }
+          return true;
+        }
+
+        const startTime = performance.now();
+        const primes = [];
+
+        // Not efficient on purpose
+        for (let i = 2; i <= limit; i++) {
+          if (isPrime(i)) {
+            primes.push(i);
+          }
+        }
+
+        const endTime = performance.now();
+        primesFound = primes.length;
+
+        const duration = (endTime - startTime).toFixed(2);
+
+        outputElement.textContent = `Calculation complete!\n`;
+        outputElement.textContent += `Found ${primesFound} prime numbers up to ${limit}.\n`;
+        outputElement.textContent += `Client-side execution time: ${duration} ms.\n\n`;
+        outputElement.textContent += `Primes: [${primes.join(", ")}]`;
+
+        console.log(`Prime calculation took ${duration} ms.`);
+      });
+    </script>
+  </body>
+</html>

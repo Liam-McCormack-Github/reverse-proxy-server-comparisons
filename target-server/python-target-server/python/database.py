@@ -1,6 +1,8 @@
-import sqlite3
 import bcrypt
+import sqlite3
+
 from simple_logger import log
+
 
 class Database:
     def __init__(self, db_file="users.db") -> None:

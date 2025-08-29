@@ -1,15 +1,17 @@
-import http.server
-import ssl
-import os
 import functools
+import http.server
 import json
-import time
+import os
+import ssl
 import threading
+import time
+
 from database import Database
 from simple_logger import log
 
 MASTER_TOKEN = ""
 TOKEN_LOCK = threading.Lock()
+
 
 def reread_token_periodically():
     global MASTER_TOKEN
@@ -18,7 +20,7 @@ def reread_token_periodically():
         try:
             with open('master_token.txt', 'r') as f:
                 new_token = f.read().strip()
-            
+
             if new_token:
                 with TOKEN_LOCK:
                     if new_token != MASTER_TOKEN:
@@ -34,50 +36,50 @@ def reread_token_periodically():
 
 class AuthRequestHandler(http.server.SimpleHTTPRequestHandler):
     def log_message(self, format, *args):
-            if format == '"%s" %s %s':
-                try:
-                    request_line = str(args[0])
-                    code = int(args[1])
-                    client_ip = self.address_string()
-                    extras = f'Code: {code}, Client IP: {client_ip}, Request: "{request_line}"'
-                    if code >= 400:
-                        error_messages = {
-                            400: "Bad Request received from client",
-                            401: "Unauthorized - Authentication failed or is required",
-                            403: "Forbidden - Client does not have permission",
-                            404: "Not Found - The requested resource does not exist",
-                            500: "Internal Server Error - An unhandled exception occurred"
-                        }
-                        message = error_messages.get(code, "Request failed with other client/server error")
-                        log("ERROR", message, extras=extras)
-                    else:
-                        success_messages = {
-                            200: "Request successful",
-                        }
-                        message = success_messages.get(code, "Request handled successfully")
-                        log("INFO", message, extras=extras)
-                except (IndexError, ValueError) as e:
-                    log("ERROR", "Custom logging failed", extras=f'Format: {format}, Args: {args}, Error: {e}')
-                    super().log_message(format, *args)
-                return
+        if format == '"%s" %s %s':
+            try:
+                request_line = str(args[0])
+                code = int(args[1])
+                client_ip = self.address_string()
+                extras = f'Code: {code}, Client IP: {client_ip}, Request: "{request_line}"'
+                if code >= 400:
+                    error_messages = {
+                        400: "Bad Request received from client",
+                        401: "Unauthorized - Authentication failed or is required",
+                        403: "Forbidden - Client does not have permission",
+                        404: "Not Found - The requested resource does not exist",
+                        500: "Internal Server Error - An unhandled exception occurred"
+                    }
+                    message = error_messages.get(code, "Request failed with other client/server error")
+                    log("ERROR", message, extras=extras)
+                else:
+                    success_messages = {
+                        200: "Request successful",
+                    }
+                    message = success_messages.get(code, "Request handled successfully")
+                    log("INFO", message, extras=extras)
+            except (IndexError, ValueError) as e:
+                log("ERROR", "Custom logging failed", extras=f'Format: {format}, Args: {args}, Error: {e}')
+                super().log_message(format, *args)
+            return
 
-            if format == 'code %d, message %s':
-                try:
-                    code = int(args[0])
-                    message = str(args[1])
-                    log("WARN", "Server sent error response", extras=f"Code: {code}, Message: '{message}'")
-                except (IndexError, ValueError) as e:
-                    log("ERROR", "Custom logging failed", extras=f'Format: {format}, Args: {args}, Error: {e}')
-                return
-                
-            super().log_message(format, *args)
+        if format == 'code %d, message %s':
+            try:
+                code = int(args[0])
+                message = str(args[1])
+                log("WARN", "Server sent error response", extras=f"Code: {code}, Message: '{message}'")
+            except (IndexError, ValueError) as e:
+                log("ERROR", "Custom logging failed", extras=f'Format: {format}, Args: {args}, Error: {e}')
+            return
+
+        super().log_message(format, *args)
 
     def handle_auth(self):
         """Authenticates the request against the in-memory master token in a thread-safe way."""
         received_token = self.headers.get('X-Proxy-Token')
         with TOKEN_LOCK:
             is_valid = received_token == MASTER_TOKEN
-        
+
         if not is_valid:
             msg = "Forbidden: Invalid or missing proxy token."
             log("WARN", msg, extras=f"IP: {self.client_address[0]}")
@@ -90,7 +92,7 @@ class AuthRequestHandler(http.server.SimpleHTTPRequestHandler):
         log("INFO", "GET /stream request received", extras=f"Client IP: {self.client_address[0]}")
         if not self.handle_auth():
             return
-        
+
         self.send_response(200)
         self.send_header('Content-type', 'application/octet-stream')
         self.end_headers()
@@ -109,7 +111,7 @@ class AuthRequestHandler(http.server.SimpleHTTPRequestHandler):
         if self.path == '/stream':
             self.do_GET_stream()
             return
-        
+
         log("INFO", "GET Request received", extras=f"Client IP: {self.client_address[0]}, Path: {self.path}")
         if not self.handle_auth():
             return
@@ -118,7 +120,6 @@ class AuthRequestHandler(http.server.SimpleHTTPRequestHandler):
             if os.path.exists(self.translate_path(self.path) + '.html'):
                 self.path += '.html'
         super().do_GET()
-
 
     def do_POST(self):
         log("INFO", "POST Request received", extras=f"Client IP: {self.client_address[0]}, Path: {self.path}")
@@ -149,12 +150,13 @@ class AuthRequestHandler(http.server.SimpleHTTPRequestHandler):
         else:
             self.send_error(404, "Not Found")
 
+
 def server():
     TARGET_SERVER_PORT = os.environ.get('TARGET_SERVER_PORT')
     TARGET_SERVER_HOST = os.environ.get('TARGET_SERVER_HOST')
     if not TARGET_SERVER_PORT or not TARGET_SERVER_HOST:
         raise Exception("TARGET_SERVER_PORT and TARGET_SERVER_HOST environment variables must be set")
-        
+
     global MASTER_TOKEN
     try:
         # Read the initial token from the file on startup.
