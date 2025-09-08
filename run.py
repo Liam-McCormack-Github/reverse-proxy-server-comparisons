@@ -296,6 +296,16 @@ def analyse() -> None:
     _execute_with_header('Starting analysis...', run_command, [sys.executable, 'data-analysis/analyse.py'])
 
 
+def run_code_analysis() -> None:
+    def _analyse() -> None:
+        log_file = Path('code-analysis') / 'lizard.log'
+        command = ['lizard', 'go-proxy', 'java-proxy', 'node-proxy', '-x', '*node_modules/*']
+        run_command(command, logfile=log_file, log_option=LOG_OPTION)
+        print(f"✅ Code analysis complete. Results saved to {log_file}")
+
+    _execute_with_header('Running code analysis...', _analyse)
+
+
 def docker_save_logs_to_zip(output_dir: Path) -> None:
     def _archive() -> None:
         services_result = subprocess.run(
@@ -478,6 +488,7 @@ def main() -> None:
     subparsers.add_parser('resetData', help='Stop containers and reset InfluxDB data.')
     subparsers.add_parser('createProxyUsers', help='Create/update proxy users in the database.')
     subparsers.add_parser('analyse', help='Run the data analysis script.')
+    subparsers.add_parser('codeAnalysis', help='Run code analysis using lizard.')
     subparsers.add_parser('testAll', help='Run all integration tests for all proxies.')
     subparsers.add_parser('logAll', help='Get logs for all containers concurrently.')
     subparsers.add_parser('logMetrics', help='Get logs for metrics containers (influxdb, telegraf).')
@@ -507,6 +518,7 @@ def main() -> None:
         'resetData': reset_data_dirs,
         'createProxyUsers': docker_create_proxy_users,
         'analyse': analyse,
+        'codeAnalysis': run_code_analysis,
         'testAll': run_all_tests,
         'logAll': log_all,
         'logMetrics': log_metrics,

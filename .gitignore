@@ -7,6 +7,8 @@ outputs-k6/*
 data-analysis/output/*
 data-analysis/__pycache__/*
 
+code-analysis/lizard.log
+
 target-server/*.pem
 target-server/master_token.txt
 
@@ -20,4 +22,3 @@ node-proxy/node_modules/*
 
 influxdb/data/*
 
-# .gitignore

@@ -25,10 +25,16 @@ def _format_duration_axis(ax: plt.Axes) -> None:
 
 def _generate_k6_summary_table(df: pd.DataFrame, output_dir: Path) -> None:
     print("📄 Generating k6 master summary table...")
-    master_table = df.sort_values(by=['test_type', 'users', 'proxy']).reset_index(drop=True)
+    master_table = df.copy()
+
+    docker_cols_to_drop = ['docker_stats_df', 'avg_cpu', 'avg_mem_mib']
+    for col in master_table.columns:
+        if any(container in col for container in config.RELEVANT_CONTAINERS):
+            docker_cols_to_drop.append(col)
     
-    if 'docker_stats_df' in master_table.columns:
-        master_table = master_table.drop(columns=['docker_stats_df'])
+    master_table.drop(columns=list(set(docker_cols_to_drop)), inplace=True, errors='ignore')
+    
+    master_table = master_table.sort_values(by=['test_type', 'users', 'proxy']).reset_index(drop=True)
 
     format_map = {
         'rps': '{:.2f}', 

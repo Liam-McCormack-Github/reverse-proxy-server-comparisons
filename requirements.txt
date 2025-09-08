@@ -3,8 +3,12 @@ pandas
 matplotlib
 seaborn
 
+# Code analysis
+lizard
+
 # Database Connector
 influxdb
 
 # Environment Variable Management
 python-dotenv
+
