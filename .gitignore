@@ -7,7 +7,7 @@ outputs-k6/*
 data-analysis/output/*
 data-analysis/__pycache__/*
 
-code-analysis/lizard.log
+code-analysis/*.log
 
 target-server/*.pem
 target-server/master_token.txt

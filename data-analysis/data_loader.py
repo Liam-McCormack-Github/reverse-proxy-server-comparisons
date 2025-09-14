@@ -1,8 +1,10 @@
 import json
-import pandas as pd
 from typing import Any, Dict, List, Optional
-import config
+
+import pandas as pd
 from influxdb import DataFrameClient
+
+import config
 
 
 def _get_metric(metrics: Dict[str, Any], metric_name: str, sub_key: str) -> Optional[Any]:
@@ -50,6 +52,10 @@ def _parse_summary_file(directory: config.Path, run_info: Dict[str, Any]) -> Opt
             'total_reqs': _get_metric(metrics, 'http_reqs', 'count'),
             'rps': _get_metric(metrics, 'http_reqs', 'rate'),
             'fail_rate': _get_metric(metrics, 'http_req_failed', 'value'),
+            'fail_count': _get_metric(metrics, 'http_req_failed', 'passes'),
+            'checks_pass_rate': _get_metric(metrics, 'checks', 'value'),
+            'checks_pass_count': _get_metric(metrics, 'checks', 'passes'),
+            'checks_fail_count': _get_metric(metrics, 'checks', 'fails'),
             'data_sent_mb_s': (_get_metric(metrics, 'data_sent', 'rate') or 0) / (1024 * 1024),
             'data_recv_mb_s': (_get_metric(metrics, 'data_received', 'rate') or 0) / (1024 * 1024),
             'iterations_count': _get_metric(metrics, 'iterations', 'count'),
@@ -58,7 +64,13 @@ def _parse_summary_file(directory: config.Path, run_info: Dict[str, Any]) -> Opt
             'vus_max': _get_metric(metrics, 'vus', 'max'),
         })
 
-        for metric_base in ['http_req_duration', 'http_req_blocked', 'http_req_tls_handshaking']:
+        metrics_to_parse = [
+            'http_req_duration', 'http_req_blocked', 'http_req_connecting',
+            'http_req_receiving', 'http_req_sending', 'http_req_tls_handshaking',
+            'http_req_waiting', 'iteration_duration'
+        ]
+
+        for metric_base in metrics_to_parse:
             for sub_key in ['avg', 'min', 'med', 'max', 'p(90)', 'p(95)']:
                 clean_key = sub_key.replace('(', '').replace(')', '')
                 col_name = f"{metric_base.replace('http_req_', '')}_{clean_key}"
@@ -93,7 +105,6 @@ def load_summary_from_files() -> pd.DataFrame:
 
 
 def _calculate_detailed_docker_stats(stats_df: pd.DataFrame, start_dt: pd.Timestamp, end_dt: pd.Timestamp) -> Dict[str, float]:
-    """Calculates aggregated stats for before, during, and after the test window."""
     detailed_stats: Dict[str, float] = {}
     periods = {
         'before': stats_df[stats_df['time'] < start_dt],
@@ -153,7 +164,7 @@ def add_docker_stats_from_influxdb(summary_df: pd.DataFrame) -> pd.DataFrame:
             combined_cpu = pd.concat(cpu_dfs).reset_index().rename(columns={'index': 'time'})
             combined_mem = pd.concat(mem_dfs).reset_index().rename(columns={'index': 'time'})
             stats_df = pd.merge(combined_cpu, combined_mem, on=['time', 'name'], how='outer').ffill().bfill()
-            
+
             stats_df['mem_usage_mib'] = stats_df['mem_bytes'] / (1024 * 1024)
             stats_df['relative_time'] = (stats_df['time'] - stats_df['time'].min()).dt.total_seconds()
             stats_df = stats_df[stats_df['name'].isin(config.RELEVANT_CONTAINERS)].copy()

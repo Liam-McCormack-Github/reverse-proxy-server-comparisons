@@ -8,11 +8,10 @@ const activeServer = SERVERS[__ENV.PROXY_TARGET] || SERVERS.go;
 
 export const options = {
   ...COMMON_OPTIONS,
-
   stages: [
-    { duration: "5s", target: 10 },
-    { duration: "10s", target: 5000 },
-    { duration: "5s", target: 10 },
+    { duration: "1m", target: 10 },
+    { duration: "3m", target: 10000 },
+    { duration: "1m", target: 10 },
   ],
 };
 

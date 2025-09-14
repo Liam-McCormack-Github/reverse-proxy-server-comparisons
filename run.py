@@ -16,7 +16,7 @@ load_dotenv()
 
 # File System Paths
 OUTPUTS_DIR = Path('outputs')
-K6_DIR = OUTPUTS_DIR / 'k6'
+K6_DIR = Path('outputs-k6')
 DOCKER_LOG_FILE = OUTPUTS_DIR / 'docker-compose.log'
 DOCKER_RESET_LOG_FILE = OUTPUTS_DIR / 'docker-compose-reset.log'
 
@@ -40,6 +40,8 @@ TEST_SCRIPTS = [
     'soak-1k',
     'soak-5k',
     'soak-10k',
+    # 'soak-for-go-target-10k',
+    # 'soak-for-python-target-10k',
 ]
 
 # Global log option
@@ -241,6 +243,10 @@ def docker_create_proxy_users() -> None:
                     'docker-compose', 'exec', 'target-server',
                     '//app/create_proxy_user', '--id', user_id, '--secret', user_secret
                 ])
+                # run_command([
+                #     'docker-compose', 'exec', 'target-server', '/bin/sh', '-c', 
+                #     f'python create_proxy_user.py --id {user_id} --secret {user_secret}'
+                # ])
             else:
                 print(f'Warning: Environment variables {id_env} or {secret_env} not set.')
 
@@ -297,13 +303,15 @@ def analyse() -> None:
 
 
 def run_code_analysis() -> None:
-    def _analyse() -> None:
-        log_file = Path('code-analysis') / 'lizard.log'
-        command = ['lizard', 'go-proxy', 'java-proxy', 'node-proxy', '-x', '*node_modules/*']
+    def _analyse(container_name: str) -> None:
+        log_file = Path('code-analysis') / f'lizard-{container_name}.log'
+        command = ['lizard', container_name, '-x', '*node_modules/*']
         run_command(command, logfile=log_file, log_option=LOG_OPTION)
         print(f"✅ Code analysis complete. Results saved to {log_file}")
-
-    _execute_with_header('Running code analysis...', _analyse)
+    
+    _execute_with_header('Running code analysis...', lambda: _analyse('go-proxy'))
+    _execute_with_header('Running code analysis...', lambda: _analyse('java-proxy'))
+    _execute_with_header('Running code analysis...', lambda: _analyse('node-proxy'))
 
 
 def docker_save_logs_to_zip(output_dir: Path) -> None:
@@ -454,7 +462,7 @@ def run_full_start() -> None:
 
 
 def run_all_tests() -> None:
-    reset_data_dirs()
+    # reset_data_dirs()
     logging_setup()
     generate_certificates()
     for proxy_to_test in PROXY_CONTAINERS:
