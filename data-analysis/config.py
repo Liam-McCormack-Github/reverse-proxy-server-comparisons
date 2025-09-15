@@ -47,7 +47,7 @@ TEST_NAME_PATTERN: Pattern[str] = re.compile(
 )
 
 COMPARATIVE_METRICS_MAP: Dict[str, str] = {
-    "Average RPS": "rps",
+    "Requests Per Second": "rps",
     "Total Requests": "total_reqs",
     "Failure Count": "fail_count",
     "Failure Rate": "fail_rate",
